@@ -1,0 +1,14 @@
+{
+  "auth": {
+    "login": "Вход",
+    "email": "Email",
+    "password": "Пароль",
+    "signIn": "Войти"
+  },
+  "settings": {
+    "languageRu": "Русский",
+    "languageEn": "English",
+    "subscription": "Подписка",
+    "manageDoctors": "Управление врачами"
+  }
+}

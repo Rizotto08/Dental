@@ -1,0 +1,14 @@
+{
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In"
+  },
+  "settings": {
+    "languageRu": "Russian",
+    "languageEn": "English",
+    "subscription": "Subscription",
+    "manageDoctors": "Manage doctors"
+  }
+}

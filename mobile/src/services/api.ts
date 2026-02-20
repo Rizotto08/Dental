@@ -1,0 +1,22 @@
+import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
+
+export const api = axios.create({
+  baseURL: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'
+});
+
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().accessToken;
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 402) {
+      // subscription inactive -> show billing screen in app flow
+    }
+    return Promise.reject(error);
+  }
+);
