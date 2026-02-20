@@ -1,0 +1,12 @@
+{
+  "name": "dentalpro",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": ["backend", "mobile"],
+  "scripts": {
+    "dev:backend": "npm --workspace backend run dev",
+    "dev:mobile": "npm --workspace mobile run start",
+    "lint": "npm --workspace backend run lint && npm --workspace mobile run lint",
+    "build": "npm --workspace backend run build"
+  }
+}

@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  MANAGER
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+model Clinic {
+  id                 String         @id @default(uuid())
+  name               String
+  email              String         @unique
+  phone              String?
+  timezone           String         @default("Europe/Moscow")
+  stripeCustomerId   String?        @unique
+  stripeSubscriptionId String?      @unique
+  subscriptionStatus SubscriptionStatus @default(TRIALING)
+  trialEndsAt        DateTime
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  users              User[]
+  patients           Patient[]
+  appointments       Appointment[]
+  treatmentPlans     TreatmentPlan[]
+  visits             Visit[]
+  payments           Payment[]
+  expenses           Expense[]
+  files              File[]
+  auditLogs          AuditLog[]
+  subscriptions      Subscription[]
+
+  @@index([subscriptionStatus])
+}
+
+model User {
+  id            String    @id @default(uuid())
+  clinicId      String
+  email         String
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          Role
+  isEmailVerified Boolean @default(false)
+  refreshTokenHash String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  clinic        Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+  auditLogs     AuditLog[]
+
+  @@unique([clinicId, email])
+  @@index([clinicId, role])
+}
+
+model Patient {
+  id            String    @id @default(uuid())
+  clinicId      String
+  firstName     String
+  lastName      String
+  phone         String?
+  email         String?
+  birthDate     DateTime?
+  notes         String?
+  photoUrl      String?
+  debt          Decimal   @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  clinic        Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+  treatmentPlans TreatmentPlan[]
+  visits        Visit[]
+  payments      Payment[]
+  files         File[]
+
+  @@index([clinicId, lastName])
+}
+
+model Appointment {
+  id            String    @id @default(uuid())
+  clinicId      String
+  patientId     String
+  doctorId      String
+  startsAt      DateTime
+  endsAt        DateTime
+  status        String
+  note          String?
+  createdAt     DateTime  @default(now())
+
+  clinic        Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient       Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor        User      @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+
+  @@index([clinicId, startsAt])
+}
+
+model TreatmentPlan {
+  id            String           @id @default(uuid())
+  clinicId      String
+  patientId     String
+  title         String
+  totalCost     Decimal          @default(0)
+  status        String
+  createdAt     DateTime         @default(now())
+
+  clinic        Clinic           @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient       Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  stages        TreatmentStage[]
+
+  @@index([clinicId, patientId])
+}
+
+model TreatmentStage {
+  id              String       @id @default(uuid())
+  clinicId        String
+  treatmentPlanId String
+  title           String
+  status          String
+  cost            Decimal      @default(0)
+  order           Int
+
+  treatmentPlan   TreatmentPlan @relation(fields: [treatmentPlanId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, treatmentPlanId])
+}
+
+model Visit {
+  id            String    @id @default(uuid())
+  clinicId      String
+  patientId     String
+  doctorId      String
+  visitDate     DateTime
+  procedures    Json
+  amount        Decimal
+  comment       String?
+  createdAt     DateTime @default(now())
+
+  clinic        Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient       Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, visitDate])
+}
+
+model Payment {
+  id            String    @id @default(uuid())
+  clinicId      String
+  patientId     String
+  amount        Decimal
+  method        String
+  paidAt        DateTime
+
+  clinic        Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient       Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, paidAt])
+}
+
+model Expense {
+  id            String    @id @default(uuid())
+  clinicId      String
+  title         String
+  amount        Decimal
+  category      String
+  spentAt       DateTime
+
+  clinic        Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, spentAt])
+}
+
+model Subscription {
+  id            String             @id @default(uuid())
+  clinicId      String
+  stripeSubId   String             @unique
+  status        SubscriptionStatus
+  currentPeriodEnd DateTime
+  createdAt     DateTime           @default(now())
+
+  clinic        Clinic             @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId, status])
+}
+
+model File {
+  id            String    @id @default(uuid())
+  clinicId      String
+  patientId     String?
+  key           String
+  url           String
+  mimeType      String
+  sizeBytes     Int
+  uploadedById  String
+  createdAt     DateTime @default(now())
+
+  clinic        Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient       Patient?  @relation(fields: [patientId], references: [id], onDelete: SetNull)
+
+  @@index([clinicId, patientId])
+}
+
+model AuditLog {
+  id            String    @id @default(uuid())
+  clinicId      String
+  userId        String?
+  action        String
+  entity        String
+  entityId      String?
+  meta          Json?
+  createdAt     DateTime @default(now())
+
+  clinic        Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([clinicId, createdAt])
+}
