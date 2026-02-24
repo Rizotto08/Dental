@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "DentalPro",
+    "slug": "dentalpro",
+    "scheme": "dentalpro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "bundleIdentifier": "com.dentalpro.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "DentalPro uses camera to upload patient photos and x-rays."
+      }
+    },
+    "android": {
+      "package": "com.dentalpro.app",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+    },
+    "plugins": ["expo-secure-store"]
+  }
+}
