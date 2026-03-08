@@ -9,7 +9,7 @@ export const auditLog = (action: string, entity: string) => async (req: Request,
         userId: req.user?.id,
         action,
         entity,
-        entityId: req.params.id,
+        entityId: typeof req.params.id === 'string' ? req.params.id : undefined,
         meta: { body: req.body }
       }
     });

@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { prisma } from '../config/prisma';
 
 export const authRepository = {
@@ -10,7 +10,7 @@ export const authRepository = {
     adminLastName: string;
     passwordHash: string;
   }) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const clinic = await tx.clinic.create({
         data: {
           name: payload.clinicName,
