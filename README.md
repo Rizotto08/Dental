@@ -62,6 +62,25 @@ npm run start
 ```
 
 
+## One-file local run (backend + mobile)
+Use one command from repo root:
+```bash
+./scripts/run-local.sh
+```
+
+For Expo tunnel mode:
+```bash
+./scripts/run-local.sh tunnel
+```
+
+What it does:
+- starts postgres + redis via docker compose
+- ensures `backend/.env`
+- installs backend deps, runs `prisma generate` and migration
+- starts backend on `:4000`
+- writes `mobile/.env` with `EXPO_PUBLIC_API_URL`
+- starts Expo
+
 ## Codespaces + Expo Tunnel (recommended for remote testing)
 1. Open project in GitHub Codespaces (default path: `/workspaces/Dental`).
 2. Start infrastructure and backend:
